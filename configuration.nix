@@ -3,14 +3,6 @@
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
 { config, pkgs, lib, ... }:
-let
-  nix-software-center = import (pkgs.fetchFromGitHub {
-    owner = "snowfallorg";
-    repo = "nix-software-center";
-    rev = "0.1.2";
-    sha256 = "xiqF1mP8wFubdsAQ1BmfjzCgOD3YZf7EGWl9i69FTls=";
-  }) {};
-in
 
 {
   imports =
@@ -31,9 +23,25 @@ in
 
   # Enable networking
   networking.networkmanager.enable = true;
-  
+
+  hardware.opengl = {
+    enable = true;
+    driSupport = true;
+    driSupport32Bit = true;
+  };
+
   # Steam
-  programs.steam.enable = true;
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    dedicatedServer.openFirewall = true;
+    gamescopeSession.enable = true;
+  };
+
+  xdg.portal.enable = true;
+
+  #flakes
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Set your time zone.
   time.timeZone = "Asia/Kolkata";
@@ -120,9 +128,9 @@ in
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
+	fnm
 	vscode-fhs
 	htop
-	nodejs_20
 	git
 	neovim
 	google-chrome
@@ -132,20 +140,29 @@ in
 	slack
 	lohit-fonts.telugu
 	kitty
-	xdg-desktop-portal-gtk
-	nix-software-center
     gnome.gnome-tweaks
     gnome-extension-manager
     bun
     gparted
     gh
-    restic
-    rclone
-    fusuma
     chromedriver
-    ollama
     wget
     xorg.xrandr
+    (python39.withPackages (ps: with ps; [
+              pip
+              setuptools
+              wheel
+              sphinx
+            ]))
+            yarn
+            gcc
+            gnumake
+            coreutils      # for essential utilities like cp, mv, rm, etc.
+            gnugrep        # for grep command
+            gnused         # for sed command
+            findutils      # for find command
+            gawk           # for awk command
+            util-linux     # for uname command
   ];
 
   fonts.fontDir.enable = true;
@@ -166,9 +183,6 @@ in
    };
 
   services.dbus.enable = true;
-  xdg.portal = {
-	enable = true;
-  };
 
   # List services that you want to enable:
 
